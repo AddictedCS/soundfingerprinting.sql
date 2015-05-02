@@ -20,6 +20,8 @@
     [TestClass]
     public class FingerprintCommandBuilderIntTest : AbstractIntegrationTest
     {
+        private static readonly Random Rand = new Random();
+
         private readonly ModelService modelService;
         private readonly IFingerprintCommandBuilder fingerprintCommandBuilder;
         private readonly QueryFingerprintService queryFingerprintService;
@@ -224,7 +226,7 @@
         {
             DefaultFingerprintConfiguration config = new DefaultFingerprintConfiguration();
 
-            AudioSamples samples = TestUtilities.GenerateRandomAudioSamples(config.SamplesPerFingerprint + config.SpectrogramConfig.WdftSize);
+            AudioSamples samples = GenerateRandomAudioSamples(config.SamplesPerFingerprint + config.SpectrogramConfig.WdftSize);
 
             var hash = fingerprintCommandBuilder.BuildFingerprintCommand()
                                                 .From(samples)
@@ -239,5 +241,28 @@
             var samples = bassAudioService.ReadMonoSamplesFromFile(PathToMp3, 5512);
             bassWaveFileUtility.WriteSamplesToFile(samples.Samples, 5512, tempFile);
         }
+
+        public static AudioSamples GenerateRandomAudioSamples(int length)
+        {
+            return new AudioSamples
+            {
+                Duration = length,
+                Origin = string.Empty,
+                SampleRate = 5512,
+                Samples = GenerateRandomFloatArray(length)
+            };
+        }
+
+        public static float[] GenerateRandomFloatArray(int length)
+        {
+            float[] result = new float[length];
+            for (int i = 0; i < length; i++)
+            {
+                result[i] = (float)Rand.NextDouble() * 32767;
+            }
+
+            return result;
+        }
     }
+
 }
