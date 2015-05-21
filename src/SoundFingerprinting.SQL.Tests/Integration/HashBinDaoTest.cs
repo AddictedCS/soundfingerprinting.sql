@@ -5,9 +5,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using SoundFingerprinting.DAO;
-    using SoundFingerprinting.MongoDb.Tests.Integration;
     using SoundFingerprinting.SQL;
-    using SoundFingerprinting.Tests.Integration.Dao;
 
     [TestClass]
     public class HashBinDaoTest : AbstractHashBinDaoTest

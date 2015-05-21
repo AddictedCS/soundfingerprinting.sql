@@ -14,8 +14,6 @@
     using SoundFingerprinting.Configuration;
     using SoundFingerprinting.DAO.Data;
     using SoundFingerprinting.Strides;
-    using SoundFingerprinting.Tests;
-    using SoundFingerprinting.Tests.Integration;
 
     [TestClass]
     public class FingerprintCommandBuilderIntTest : AbstractIntegrationTest

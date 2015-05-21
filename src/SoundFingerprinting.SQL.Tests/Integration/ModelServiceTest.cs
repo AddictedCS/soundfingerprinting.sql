@@ -1,4 +1,4 @@
-﻿namespace SoundFingerprinting.Tests.Integration
+﻿namespace SoundFingerprinting.SQL.Tests.Integration
 {
     using System.Collections.Generic;
     using System.Linq;

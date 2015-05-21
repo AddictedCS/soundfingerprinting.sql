@@ -6,7 +6,6 @@
 
     using SoundFingerprinting.DAO;
     using SoundFingerprinting.SQL;
-    using SoundFingerprinting.Tests.Integration.Dao;
 
     [TestClass]
     public class SubFingerprintDaoTest : AbstractSubFingerprintDaoTest

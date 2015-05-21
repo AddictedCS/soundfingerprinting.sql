@@ -1,4 +1,4 @@
-﻿namespace SoundFingerprinting.MongoDb.Tests.Integration
+﻿namespace SoundFingerprinting.SQL.Tests.Integration
 {
     using System.Collections.Generic;
 
@@ -10,7 +10,6 @@
     using SoundFingerprinting.DAO;
     using SoundFingerprinting.DAO.Data;
     using SoundFingerprinting.FFT;
-    using SoundFingerprinting.Tests.Integration;
     using SoundFingerprinting.Utils;
 
     [TestClass]
@@ -21,8 +20,8 @@
 
         protected AbstractSpectralImageDaoTest()
         {
-            this.audioService = new NAudioService();
-            this.spectrumService = new SpectrumService();
+            audioService = new NAudioService();
+            spectrumService = new SpectrumService();
         }
 
         public abstract ISpectralImageDao SpectralImageDao { get; set; }
@@ -33,10 +32,10 @@
         public void TestSpectralImagesAreInsertedInDataSource()
         {
             TrackData track = new TrackData("isrc", "artist", "title", "album", 1986, 200);
-            var trackReference = this.TrackDao.InsertTrack(track);
-            var audioSamples = this.audioService.ReadMonoSamplesFromFile(
+            var trackReference = TrackDao.InsertTrack(track);
+            var audioSamples = audioService.ReadMonoSamplesFromFile(
                 PathToMp3, FingerprintConfiguration.Default.SampleRate);
-            var spectralImages = this.spectrumService.CreateLogSpectrogram(audioSamples, SpectrogramConfig.Default);
+            var spectralImages = spectrumService.CreateLogSpectrogram(audioSamples, SpectrogramConfig.Default);
             var concatenatedSpectralImages = new List<float[]>();
             foreach (var spectralImage in spectralImages)
             {
@@ -44,9 +43,9 @@
                 concatenatedSpectralImages.Add(concatenatedSpectralImage);
             }
             
-            this.SpectralImageDao.InsertSpectralImages(concatenatedSpectralImages, trackReference);
+            SpectralImageDao.InsertSpectralImages(concatenatedSpectralImages, trackReference);
 
-            var readSpectralImages = this.SpectralImageDao.GetSpectralImagesByTrackId(trackReference);
+            var readSpectralImages = SpectralImageDao.GetSpectralImagesByTrackId(trackReference);
             Assert.AreEqual(concatenatedSpectralImages.Count, readSpectralImages.Count);
             foreach (var readSpectralImage in readSpectralImages)
             {

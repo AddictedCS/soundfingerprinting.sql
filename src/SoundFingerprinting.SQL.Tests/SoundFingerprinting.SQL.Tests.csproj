@@ -110,14 +110,8 @@
       <Project>{6a632721-03e5-46c1-8457-66333f7271aa}</Project>
       <Name>SoundFingerprinting.SQL</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SoundFingerprinting.Tests\SoundFingerprinting.Tests.csproj">
-      <Project>{987da38d-5157-4d83-9b1d-83a0a62d0e94}</Project>
-      <Name>SoundFingerprinting.Tests</Name>
-    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Unit\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
