@@ -37,4 +37,4 @@ public void StoreAudioFileFingerprintsInStorageForLaterRetrieval(string pathToAu
 In order to build latest version of the <code>SoundFingerprinting.SQL</code> assembly run the following command from repository root
     .\build.cmd
 ## Get it on NuGet
-    Install-Package SoundFingerprinting.SQL -pre
+    Install-Package SoundFingerprinting.SQL -Pre
