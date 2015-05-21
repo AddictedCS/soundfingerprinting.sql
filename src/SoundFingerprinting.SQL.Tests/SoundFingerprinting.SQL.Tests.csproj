@@ -89,7 +89,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="AbstractTest.cs" />
     <Compile Include="Integration\AbstractIntegrationTest.cs" />
     <Compile Include="Integration\SpectralImageDaoTest.cs" />
     <Compile Include="Integration\FingerprintCommandBuilderIntTest.cs" />
