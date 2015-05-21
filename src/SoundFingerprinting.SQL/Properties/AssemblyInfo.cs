@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("SoundFingerprinting.SQL")]
-[assembly: AssemblyDescription("SQL backend for SoundFingerprinting framework. Allows storing fingerprints in SQL database. Please find the database creation script on project GitHub page.")]
+[assembly: AssemblyDescription("SQL backend for SoundFingerprinting framework. Allows storing fingerprints (and other associated data) in SQL database. Please find the database creation script on project's GitHub page. Minor adjustments have to be done in the script so that it can be used with SQL Azure storage.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Ciumac Sergiu")]
 [assembly: AssemblyProduct("SoundFingerprinting.SQL")]
