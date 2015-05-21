@@ -1,39 +1,40 @@
 <Project DefaultTargets="All" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<PropertyGroup>
-  <Configuration Condition="$(Configuration) == ''">Release</Configuration>
-  <SolutionFile>..\src\SoundFingerprinting.MongoDb.sln</SolutionFile>
-  <NugetExecutable>..\src\.nuget\NuGet.exe</NugetExecutable>
-  <MSTestExecutable>..\tools\MSTest.exe</MSTestExecutable>
-  <SoundFingerprintingMongoProject>..\src\SoundFingerprinting.MongoDb\SoundFingerprinting.MongoDb.csproj</SoundFingerprintingMongoProject>
-  <UnitTestsOutputDir>$(Configuration)\UnitTests</UnitTestsOutputDir>
-</PropertyGroup>
-
-<Target Name = "Compile">
-    <MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(Configuration)" />
-	<Message Text="Copying Tests files to output directories" />
-	<MakeDir Directories="$(UnitTestsOutputDir)" Condition="!Exists('$(UnitTestsOutputDir)')" />
 	
-	<CreateItem Include="..\src\SoundFingerprinting.MongoDb.Tests\bin\$(Configuration)\**\*.*">
-		<Output TaskParameter="Include" ItemName="UnitTestFiles" />
-    </CreateItem>
-	
-	<Copy SourceFiles="@(UnitTestFiles)" DestinationFiles="@(UnitTestFiles->'$(UnitTestsOutputDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
-</Target>
+	<PropertyGroup>
+	  <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+	  <SolutionFile>..\src\SoundFingerprinting.SQL.sln</SolutionFile>
+	  <NugetExecutable>..\src\.nuget\NuGet.exe</NugetExecutable>
+	  <MSTestExecutable>..\tools\MSTest.exe</MSTestExecutable>
+	  <SoundFingerprintingSQLProject>..\src\SoundFingerprinting.SQL\SoundFingerprinting.SQL.csproj</SoundFingerprintingSQLProject>
+	  <UnitTestsOutputDir>$(Configuration)\UnitTests</UnitTestsOutputDir>
+	</PropertyGroup>
 
-<Target Name = "RunMongoDbTests">
-	<Exec Command="$(MSTestExecutable) /testcontainer:$(UnitTestsOutputDir)\SoundFingerprinting.MongoDb.Tests.dll" >
-		<Output TaskParameter="ExitCode" PropertyName="TestSuccessOrNot"/>
-    </Exec>
-</Target>
+	<Target Name = "Compile">
+		<MSBuild Projects="$(SolutionFile)" Properties="Configuration=$(Configuration)" />
+		<Message Text="Copying Tests files to output directories" />
+		<MakeDir Directories="$(UnitTestsOutputDir)" Condition="!Exists('$(UnitTestsOutputDir)')" />
+		
+		<CreateItem Include="..\src\SoundFingerprinting.SQL.Tests\bin\$(Configuration)\**\*.*">
+			<Output TaskParameter="Include" ItemName="UnitTestFiles" />
+		</CreateItem>
+		
+		<Copy SourceFiles="@(UnitTestFiles)" DestinationFiles="@(UnitTestFiles->'$(UnitTestsOutputDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+	</Target>
 
-<Target Name = "PackageMongoDBLib" DependsOnTargets="RunMongoDbTests">
-	<Exec Command="&quot;$(NugetExecutable)&quot; pack $(SoundFingerprintingMongoProject) -Build -Properties Configuration=$(Configuration)" />
-</Target>
+	<Target Name = "RunSQLTests">
+		<Exec Command="$(MSTestExecutable) /testcontainer:$(UnitTestsOutputDir)\SoundFingerprinting.SQL.Tests.dll" >
+			<Output TaskParameter="ExitCode" PropertyName="TestSuccessOrNot"/>
+		</Exec>
+	</Target>
 
-<Target Name = "Package" DependsOnTargets="PackageMongoDBLib">
-	<RemoveDir Directories="TestResults" />
-</Target>
+	<Target Name = "PackageSQLLib" DependsOnTargets="RunSQLTests">
+		<Exec Command="&quot;$(NugetExecutable)&quot; pack $(SoundFingerprintingSQLProject) -Build -Properties Configuration=$(Configuration)" />
+	</Target>
 
-<Target Name = "All" DependsOnTargets="Compile;Package" />
+	<Target Name = "Package" DependsOnTargets="PackageSQLLib">
+		<RemoveDir Directories="TestResults" />
+	</Target>
+
+	<Target Name = "All" DependsOnTargets="Compile;Package" />
 
 </Project>
