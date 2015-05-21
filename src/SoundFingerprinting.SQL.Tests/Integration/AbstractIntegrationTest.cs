@@ -1,4 +1,4 @@
-﻿namespace SoundFingerprinting.Tests.Integration
+﻿namespace SoundFingerprinting.SQL.Tests.Integration
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -19,8 +19,8 @@
             Assert.AreEqual(firstHashDatas.Count, secondHashDatas.Count);
          
             // hashes are not ordered as parallel computation is involved
-            firstHashDatas = SortHashesByFirstValueOfHashBin(firstHashDatas);
-            secondHashDatas = SortHashesByFirstValueOfHashBin(secondHashDatas);
+            firstHashDatas = this.SortHashesByFirstValueOfHashBin(firstHashDatas);
+            secondHashDatas = this.SortHashesByFirstValueOfHashBin(secondHashDatas);
 
             for (int i = 0; i < firstHashDatas.Count; i++)
             {
