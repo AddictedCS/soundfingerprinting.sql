@@ -95,7 +95,6 @@
     <Compile Include="Integration\AbstractIntegrationTest.cs" />
     <Compile Include="Integration\AbstractSpectralImageDaoTest.cs" />
     <Compile Include="Integration\AbstractSubFingerprintDaoTest.cs" />
-    <Compile Include="Integration\AbstractTrackDaoTest.cs" />
     <Compile Include="Integration\FingerprintCommandBuilderIntTest.cs" />
     <Compile Include="Integration\FingerprintDaoTest.cs" />
     <Compile Include="Integration\HashBinDaoTest.cs" />
