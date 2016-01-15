@@ -4,7 +4,6 @@
 
     using SoundFingerprinting.DAO;
     using SoundFingerprinting.DAO.Data;
-    using SoundFingerprinting.Data;
 
     internal class SpectralImageDao : ISpectralImageDao 
     {
