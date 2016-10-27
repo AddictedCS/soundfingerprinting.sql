@@ -228,7 +228,7 @@
             }
 
             Assert.IsTrue(hashBinDao.ReadHashedFingerprintsByTrackReference(actualTrack.TrackReference).Count == 0);
-            Assert.AreEqual(1 + hashData.Count + (FingerprintConfiguration.Default.HashingConfig.NumberOfLSHTables * hashData.Count), modifiedRows);
+            Assert.AreEqual(1 + hashData.Count + (new DefaultFingerprintConfiguration().HashingConfig.NumberOfLSHTables * hashData.Count), modifiedRows);
         }
 
         [TestMethod]
