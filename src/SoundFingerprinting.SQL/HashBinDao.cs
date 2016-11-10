@@ -87,6 +87,21 @@ namespace SoundFingerprinting.SQL
                            .AsList(GetSubFingerprintData);
         }
 
+        public ISet<SubFingerprintData> ReadAllSubFingerprintCandidatesWithThreshold(IEnumerable<HashedFingerprint> hashes, int threshold)
+        {
+            var allCandidates = new HashSet<SubFingerprintData>();
+            foreach (var hashedFingerprint in hashes)
+            {
+                var subFingerprints = ReadSubFingerprintDataByHashBucketsWithThreshold(hashedFingerprint.HashBins, threshold);
+                foreach (var subFingerprint in subFingerprints)
+                {
+                    allCandidates.Add(subFingerprint);
+                }
+            }
+
+            return allCandidates;
+        }
+
         private IParameterBinder PrepareReadSubFingerprintsByHashBuckets(string storedProcedure, long[] hashBuckets, int thresholdVotes)
         {
             var parameterBinder = PrepareStoredProcedure(storedProcedure);
