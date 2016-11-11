@@ -1,53 +1,139 @@
 ﻿namespace SoundFingerprinting.SQL
 {
+    using System.Collections.Generic;
     using System.Data;
+    using System.Linq;
 
     using SoundFingerprinting.DAO;
     using SoundFingerprinting.DAO.Data;
+    using SoundFingerprinting.Data;
     using SoundFingerprinting.Infrastructure;
+    using SoundFingerprinting.Math;
     using SoundFingerprinting.SQL.Connection;
+    using SoundFingerprinting.SQL.DAO;
     using SoundFingerprinting.SQL.ORM;
 
     internal class SubFingerprintDao : AbstractDao, ISubFingerprintDao
     {
         private const string SpInsertSubFingerprint = "sp_InsertSubFingerprint";
-        private const string SpReadSubFingerprintById = "sp_ReadSubFingerprintById";
+        private const string SpReadFingerprintsByHashBinHashTableAndThreshold = "sp_ReadFingerprintsByHashBinHashTableAndThreshold";
+        private const string SpReadSubFingerprintsByHashBinHashTableAndThresholdWithGroupId =
+            "sp_ReadSubFingerprintsByHashBinHashTableAndThresholdWithGroupId";
 
-        public SubFingerprintDao() : base(
+        private const string SpReadSubFingerprintsByTrackId = "sp_ReadSubFingerprintsByTrackId";
+
+        private readonly IHashConverter hashConverter;
+
+        public SubFingerprintDao()
+            : this(
                 DependencyResolver.Current.Get<IDatabaseProviderFactory>(),
-                DependencyResolver.Current.Get<IModelBinderFactory>())
+                DependencyResolver.Current.Get<IModelBinderFactory>(),
+                DependencyResolver.Current.Get<IHashConverter>())
         {
             // no op
         }
 
-        public SubFingerprintDao(IDatabaseProviderFactory databaseProvider, IModelBinderFactory modelBinderFactory)
+        public SubFingerprintDao(IDatabaseProviderFactory databaseProvider, IModelBinderFactory modelBinderFactory, IHashConverter hashConverter)
             : base(databaseProvider, modelBinderFactory)
         {
+            this.hashConverter = hashConverter;
         }
 
-        public SubFingerprintData ReadSubFingerprint(IModelReference subFingerprintReference)
+        public void InsertHashDataForTrack(IEnumerable<HashedFingerprint> hashes, IModelReference trackReference)
         {
-            return PrepareStoredProcedure(SpReadSubFingerprintById)
-                        .WithParameter("Id", subFingerprintReference.Id, DbType.Int64)
-                        .Execute()
-                        .AsComplexModel<SubFingerprintData>((item, reader) =>
-                            {
-                                item.SubFingerprintReference = new ModelReference<long>(reader.GetInt64("Id"));
-                                item.TrackReference = new ModelReference<int>(reader.GetInt32("TrackId"));
-                            });
+            foreach (var hashedFingerprint in hashes)
+            {
+                var procedure =
+                    PrepareStoredProcedure(SpInsertSubFingerprint).WithParameter(
+                        "TrackId", trackReference.Id, DbType.Int32).WithParameter(
+                            "SequenceNumber", hashedFingerprint.SequenceNumber, DbType.Int32).WithParameter(
+                                "SequenceAt", hashedFingerprint.Timestamp, DbType.Double);
+                for (int i = 0; i < hashedFingerprint.HashBins.Length; ++i)
+                {
+                    procedure.WithParameter("HashTable_" + i, hashedFingerprint.HashBins[i], DbType.Int32);
+                }
+
+                procedure.Execute().AsScalar<long>();
+            }
         }
 
-        public IModelReference InsertSubFingerprint(byte[] signature, int sequenceNumber, double sequenceAt, IModelReference trackReference)
+        public IList<HashedFingerprint> ReadHashedFingerprintsByTrackReference(IModelReference trackReference)
         {
-            long subFingerprintId = PrepareStoredProcedure(SpInsertSubFingerprint)
-                                .WithParameter("Signature", signature)
-                                .WithParameter("TrackId", trackReference.Id, DbType.Int32)
-                                .WithParameter("SequenceNumber", sequenceNumber, DbType.Int32)
-                                .WithParameter("SequenceAt", sequenceAt, DbType.Double)
-                                .Execute()
-                                .AsScalar<long>();
-
-            return new ModelReference<long>(subFingerprintId);
+            return this.PrepareStoredProcedure(SpReadSubFingerprintsByTrackId)
+                .WithParameter("TrackId", trackReference.Id, DbType.Int32)
+                .Execute()
+                .AsListOfModel<SubFingerprintDTO>()
+                .Select(dto =>
+                    {
+                        var hashes = GetHashes(dto);
+                        byte[] signature = hashConverter.ToBytes(hashes, 100);
+                        return new HashedFingerprint(signature, hashes, dto.SequenceNumber, dto.SequenceAt);
+                    }).ToList();
         }
+
+        public IEnumerable<SubFingerprintData> ReadSubFingerprints(long[] hashBins, int thresholdVotes)
+        {
+            return this.PrepareReadSubFingerprintsByHashBuckets(SpReadFingerprintsByHashBinHashTableAndThreshold, hashBins, thresholdVotes)
+                    .Execute()
+                    .AsListOfModel<SubFingerprintDTO>()
+                    .Select(GetSubFingerprintData);
+        }
+
+        public IEnumerable<SubFingerprintData> ReadSubFingerprints(long[] hashBuckets, int thresholdVotes, string trackGroupId)
+        {
+            return this.PrepareReadSubFingerprintsByHashBuckets(
+                    SpReadSubFingerprintsByHashBinHashTableAndThresholdWithGroupId, hashBuckets, thresholdVotes)
+                           .WithParameter("GroupId", trackGroupId)
+                           .Execute()
+                           .AsListOfModel<SubFingerprintDTO>()
+                           .Select(GetSubFingerprintData);
+        }
+
+        public ISet<SubFingerprintData> ReadSubFingerprints(IEnumerable<long[]> hashes, int threshold)
+        {
+            var set = new HashSet<SubFingerprintData>();
+            foreach (var subFingerprintData in hashes.Select(hash => this.ReadSubFingerprints(hash, threshold)).SelectMany(subs => subs))
+            {
+                set.Add(subFingerprintData);
+            }
+
+            return set;
+        }
+
+        private IParameterBinder PrepareReadSubFingerprintsByHashBuckets(string storedProcedure, long[] hashBuckets, int thresholdVotes)
+        {
+            var parameterBinder = this.PrepareStoredProcedure(storedProcedure);
+            for (int hashTable = 0; hashTable < hashBuckets.Length; hashTable++)
+            {
+                parameterBinder = parameterBinder.WithParameter("HashBin_" + hashTable, hashBuckets[hashTable]);
+            }
+
+            return parameterBinder.WithParameter("Threshold", thresholdVotes);
+        }
+
+        private SubFingerprintData GetSubFingerprintData(SubFingerprintDTO dto)
+        {
+            long[] hashes = GetHashes(dto);
+            return new SubFingerprintData(
+                hashes,
+                dto.SequenceNumber,
+                dto.SequenceAt,
+                new ModelReference<long>(dto.Id),
+                new ModelReference<int>(dto.TrackId));
+        }
+
+        private long[] GetHashes(SubFingerprintDTO dto)
+        {
+            long[] hashes = new[]
+                {
+                    dto.HashTable_0, dto.HashTable_1, dto.HashTable_2, dto.HashTable_3, dto.HashTable_4, dto.HashTable_5,
+                    dto.HashTable_6, dto.HashTable_7, dto.HashTable_8, dto.HashTable_9, dto.HashTable_10, dto.HashTable_11,
+                    dto.HashTable_12, dto.HashTable_13, dto.HashTable_14, dto.HashTable_15, dto.HashTable_16, dto.HashTable_17,
+                    dto.HashTable_18, dto.HashTable_19, dto.HashTable_20, dto.HashTable_21, dto.HashTable_22,
+                    dto.HashTable_23, dto.HashTable_24
+                };
+            return hashes;
+        }
+
     }
 }

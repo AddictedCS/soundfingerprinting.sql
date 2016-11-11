@@ -24,7 +24,6 @@
         private readonly IAudioService audioService;
         private readonly ITrackDao trackDao;
         private readonly ISubFingerprintDao subFingerprintDao;
-        private readonly IHashBinDao hashBinDao;
 
         private TransactionScope transactionPerTestScope;
 
@@ -32,7 +31,6 @@
         {
             trackDao = new TrackDao();
             subFingerprintDao = new SubFingerprintDao();
-            hashBinDao = new HashBinDao();
             fingerprintCommandBuilder = new FingerprintCommandBuilder();
             audioService = new NAudioService();
         }
@@ -205,13 +203,7 @@
                 .Hash()
                 .Result;
 
-            var subFingerprintReferences = new List<IModelReference>();
-            foreach (var hash in hashData)
-            {
-                var subFingerprintReference = subFingerprintDao.InsertSubFingerprint(hash.SubFingerprint, hash.SequenceNumber, hash.Timestamp, trackReference);
-                hashBinDao.InsertHashBins(hash.HashBins, subFingerprintReference, trackReference);
-                subFingerprintReferences.Add(subFingerprintReference);
-            }
+            subFingerprintDao.InsertHashDataForTrack(hashData, trackReference);
 
             var actualTrack = trackDao.ReadTrackByISRC(tagInfo.ISRC);
             Assert.IsNotNull(actualTrack);
@@ -221,14 +213,8 @@
             int modifiedRows = trackDao.DeleteTrack(trackReference);
 
             Assert.IsNull(trackDao.ReadTrackByISRC(tagInfo.ISRC));
-            foreach (var id in subFingerprintReferences)
-            {
-                Assert.IsTrue(id.GetHashCode() != 0);
-                Assert.IsNull(subFingerprintDao.ReadSubFingerprint(id));
-            }
-
-            Assert.IsTrue(hashBinDao.ReadHashedFingerprintsByTrackReference(actualTrack.TrackReference).Count == 0);
-            Assert.AreEqual(1 + hashData.Count + (new DefaultFingerprintConfiguration().HashingConfig.NumberOfLSHTables * hashData.Count), modifiedRows);
+            Assert.IsTrue(subFingerprintDao.ReadHashedFingerprintsByTrackReference(actualTrack.TrackReference).Count == 0);
+            Assert.AreEqual(1 + hashData.Count, modifiedRows);
         }
 
         [TestMethod]

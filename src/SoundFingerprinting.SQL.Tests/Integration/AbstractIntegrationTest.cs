@@ -39,9 +39,31 @@
 
         protected readonly byte[] GenericSignature = new[]
             {
-                (byte)1, (byte)2, (byte)3, (byte)4, (byte)5, (byte)6, (byte)7, (byte)8, (byte)9, (byte)10, (byte)11,
-                (byte)12, (byte)13, (byte)14, (byte)15, (byte)16, (byte)17, (byte)18, (byte)19, (byte)20, (byte)21,
-                (byte)22, (byte)23, (byte)24, (byte)25
+                (byte)1, (byte)0, (byte)0, (byte)0,
+                (byte)2, (byte)0, (byte)0, (byte)0,
+                (byte)3, (byte)0, (byte)0, (byte)0,
+                (byte)4, (byte)0, (byte)0, (byte)0,
+                (byte)5, (byte)0, (byte)0, (byte)0,
+                (byte)6, (byte)0, (byte)0, (byte)0,
+                (byte)7, (byte)0, (byte)0, (byte)0,
+                (byte)8, (byte)0, (byte)0, (byte)0,
+                (byte)9, (byte)0, (byte)0, (byte)0,
+                (byte)10, (byte)0, (byte)0, (byte)0,
+                (byte)11, (byte)0, (byte)0, (byte)0,
+                (byte)12, (byte)0, (byte)0, (byte)0,
+                (byte)13, (byte)0, (byte)0, (byte)0,
+                (byte)14, (byte)0, (byte)0, (byte)0,
+                (byte)15, (byte)0, (byte)0, (byte)0,
+                (byte)16, (byte)0, (byte)0, (byte)0,
+                (byte)17, (byte)0, (byte)0, (byte)0,
+                (byte)18, (byte)0, (byte)0, (byte)0,
+                (byte)19, (byte)0, (byte)0, (byte)0,
+                (byte)20, (byte)0, (byte)0, (byte)0,
+                (byte)21, (byte)0, (byte)0, (byte)0,
+                (byte)22, (byte)0, (byte)0, (byte)0,
+                (byte)23, (byte)0, (byte)0, (byte)0,
+                (byte)24, (byte)0, (byte)0, (byte)0,
+                (byte)25, (byte)0, (byte)0, (byte)0,
             };
 
         protected readonly long[] GenericHashBuckets = new[]

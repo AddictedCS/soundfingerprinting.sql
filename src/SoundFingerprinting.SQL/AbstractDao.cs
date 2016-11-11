@@ -2,6 +2,7 @@ namespace SoundFingerprinting.SQL
 {
     using System.Data;
 
+    using SoundFingerprinting.Math;
     using SoundFingerprinting.SQL.Connection;
     using SoundFingerprinting.SQL.ORM;
 
