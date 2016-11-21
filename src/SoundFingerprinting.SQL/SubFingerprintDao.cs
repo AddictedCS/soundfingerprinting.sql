@@ -47,7 +47,7 @@
                     PrepareStoredProcedure(SpInsertSubFingerprint).WithParameter(
                         "TrackId", trackReference.Id, DbType.Int32).WithParameter(
                             "SequenceNumber", hashedFingerprint.SequenceNumber, DbType.Int32).WithParameter(
-                                "SequenceAt", hashedFingerprint.Timestamp, DbType.Double);
+                                "SequenceAt", hashedFingerprint.StartsAt, DbType.Double);
                 for (int i = 0; i < hashedFingerprint.HashBins.Length; ++i)
                 {
                     procedure.WithParameter("HashTable_" + i, hashedFingerprint.HashBins[i], DbType.Int32);
