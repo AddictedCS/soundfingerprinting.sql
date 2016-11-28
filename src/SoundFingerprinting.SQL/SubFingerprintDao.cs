@@ -17,8 +17,8 @@
     {
         private const string SpInsertSubFingerprint = "sp_InsertSubFingerprint";
         private const string SpReadFingerprintsByHashBinHashTableAndThreshold = "sp_ReadFingerprintsByHashBinHashTableAndThreshold";
-        private const string SpReadSubFingerprintsByHashBinHashTableAndThresholdWithGroupId =
-            "sp_ReadSubFingerprintsByHashBinHashTableAndThresholdWithGroupId";
+        private const string SpReadSubFingerprintsByHashBinHashTableAndThresholdWithClusters =
+            "sp_ReadSubFingerprintsByHashBinHashTableAndThresholdWithClusters";
 
         private const string SpReadSubFingerprintsByTrackId = "sp_ReadSubFingerprintsByTrackId";
 
@@ -44,10 +44,12 @@
             foreach (var hashedFingerprint in hashes)
             {
                 var procedure =
-                    PrepareStoredProcedure(SpInsertSubFingerprint).WithParameter(
-                        "TrackId", trackReference.Id, DbType.Int32).WithParameter(
-                            "SequenceNumber", hashedFingerprint.SequenceNumber, DbType.Int32).WithParameter(
-                                "SequenceAt", hashedFingerprint.StartsAt, DbType.Double);
+                    PrepareStoredProcedure(SpInsertSubFingerprint)
+                            .WithParameter("TrackId", trackReference.Id, DbType.Int32)
+                            .WithParameter("SequenceNumber", hashedFingerprint.SequenceNumber, DbType.Int32)
+                            .WithParameter("SequenceAt", hashedFingerprint.StartsAt, DbType.Double)
+                            .WithParameter("Clusters", string.Join(",", hashedFingerprint.Clusters), DbType.String);
+
                 for (int i = 0; i < hashedFingerprint.HashBins.Length; ++i)
                 {
                     procedure.WithParameter("HashTable_" + i, hashedFingerprint.HashBins[i], DbType.Int32);
@@ -67,32 +69,22 @@
                     {
                         var hashes = GetHashes(dto);
                         byte[] signature = hashConverter.ToBytes(hashes, 100);
-                        return new HashedFingerprint(signature, hashes, dto.SequenceNumber, dto.SequenceAt);
+                        return new HashedFingerprint(signature, hashes, dto.SequenceNumber, dto.SequenceAt, string.IsNullOrEmpty(dto.Clusters) ? Enumerable.Empty<string>() : dto.Clusters.Split(','));
                     }).ToList();
         }
 
-        public IEnumerable<SubFingerprintData> ReadSubFingerprints(long[] hashBins, int thresholdVotes)
+        public IEnumerable<SubFingerprintData> ReadSubFingerprints(long[] hashBins, int thresholdVotes, IEnumerable<string> clusters)
         {
-            return this.PrepareReadSubFingerprintsByHashBuckets(SpReadFingerprintsByHashBinHashTableAndThreshold, hashBins, thresholdVotes)
+            return PrepareReadSubFingerprintsByHashBuckets(hashBins, thresholdVotes, clusters)
                     .Execute()
                     .AsListOfModel<SubFingerprintDTO>()
                     .Select(GetSubFingerprintData);
         }
 
-        public IEnumerable<SubFingerprintData> ReadSubFingerprints(long[] hashBuckets, int thresholdVotes, string trackGroupId)
-        {
-            return this.PrepareReadSubFingerprintsByHashBuckets(
-                    SpReadSubFingerprintsByHashBinHashTableAndThresholdWithGroupId, hashBuckets, thresholdVotes)
-                           .WithParameter("GroupId", trackGroupId)
-                           .Execute()
-                           .AsListOfModel<SubFingerprintDTO>()
-                           .Select(GetSubFingerprintData);
-        }
-
-        public ISet<SubFingerprintData> ReadSubFingerprints(IEnumerable<long[]> hashes, int threshold)
+        public ISet<SubFingerprintData> ReadSubFingerprints(IEnumerable<long[]> hashes, int threshold, IEnumerable<string> clusters)
         {
             var set = new HashSet<SubFingerprintData>();
-            foreach (var subFingerprintData in hashes.Select(hash => this.ReadSubFingerprints(hash, threshold)).SelectMany(subs => subs))
+            foreach (var subFingerprintData in hashes.Select(hash => this.ReadSubFingerprints(hash, threshold, clusters)).SelectMany(subs => subs))
             {
                 set.Add(subFingerprintData);
             }
@@ -100,12 +92,24 @@
             return set;
         }
 
-        private IParameterBinder PrepareReadSubFingerprintsByHashBuckets(string storedProcedure, long[] hashBuckets, int thresholdVotes)
+        private IParameterBinder PrepareReadSubFingerprintsByHashBuckets(long[] hashBuckets, int thresholdVotes, IEnumerable<string> clusters)
         {
+            string storedProcedure = SpReadFingerprintsByHashBinHashTableAndThreshold;
+            var enumerable = clusters as List<string> ?? clusters.ToList();
+            if (enumerable.Any())
+            {
+                storedProcedure = SpReadSubFingerprintsByHashBinHashTableAndThresholdWithClusters;
+            }
+
             var parameterBinder = this.PrepareStoredProcedure(storedProcedure);
             for (int hashTable = 0; hashTable < hashBuckets.Length; hashTable++)
             {
                 parameterBinder = parameterBinder.WithParameter("HashBin_" + hashTable, hashBuckets[hashTable]);
+            }
+
+            if (enumerable.Any())
+            {
+                parameterBinder.WithParameter("Clusters", string.Format("%{0}%", string.Join(",", enumerable)));
             }
 
             return parameterBinder.WithParameter("Threshold", thresholdVotes);

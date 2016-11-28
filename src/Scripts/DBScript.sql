@@ -25,9 +25,8 @@ CREATE TABLE Tracks
 	Title VARCHAR(255),
 	Album VARCHAR(255),
 	ReleaseYear INT DEFAULT 0,
-	TrackLengthSec FLOAT DEFAULT 0,
-	GroupId VARCHAR(20),
-	CONSTRAINT CK_TracksTrackLength CHECK(TrackLengthSec > -1),
+	Length FLOAT DEFAULT 0,
+	CONSTRAINT CK_TracksTrackLength CHECK(Length > -1),
 	CONSTRAINT CK_ReleaseYear CHECK(ReleaseYear > -1),
 	CONSTRAINT PK_TracksId PRIMARY KEY(Id)
 )
@@ -65,6 +64,7 @@ CREATE TABLE SubFingerprints
 	HashTable_22 BIGINT NOT NULL,	
 	HashTable_23 BIGINT NOT NULL,	
 	HashTable_24 BIGINT NOT NULL,
+	Clusters VARCHAR(255),
 	CONSTRAINT PK_SubFingerprintsId PRIMARY KEY(Id),
 	CONSTRAINT FK_SubFingerprints_Tracks FOREIGN KEY (TrackId) REFERENCES dbo.Tracks(Id)
 )
@@ -94,8 +94,7 @@ CREATE PROCEDURE sp_InsertTrack
 	@Title VARCHAR(255),
 	@Album VARCHAR(255),
 	@ReleaseYear INT,
-	@TrackLengthSec FLOAT,
-	@GroupId VARCHAR(20)
+	@Length FLOAT
 AS
 INSERT INTO Tracks (
 	ISRC,
@@ -103,12 +102,11 @@ INSERT INTO Tracks (
 	Title,
 	Album,
 	ReleaseYear,
-	TrackLengthSec,
-	GroupId
+	Length
 	) OUTPUT inserted.Id
 VALUES
 (
- 	@ISRC, @Artist, @Title, @Album, @ReleaseYear, @TrackLengthSec, @GroupId
+ 	@ISRC, @Artist, @Title, @Album, @ReleaseYear, @Length
 );
 GO
 -- INSERT INTO SUBFINGERPRINTS
@@ -143,7 +141,8 @@ CREATE PROCEDURE sp_InsertSubFingerprint
     @HashTable_21 BIGINT,	
 	@HashTable_22 BIGINT,	
 	@HashTable_23 BIGINT,	
-	@HashTable_24 BIGINT
+	@HashTable_24 BIGINT,
+	@Clusters VARCHAR(255)
 AS
 BEGIN
 INSERT INTO SubFingerprints (
@@ -174,13 +173,15 @@ INSERT INTO SubFingerprints (
     HashTable_21,	
 	HashTable_22,	
 	HashTable_23,	
-	HashTable_24
+	HashTable_24,
+	Clusters
 	) OUTPUT inserted.Id
 VALUES
 (
 	@TrackId, @SequenceNumber, @SequenceAt, @HashTable_0, @HashTable_1, @HashTable_2, @HashTable_3, @HashTable_4, @HashTable_5, @HashTable_6,
     @HashTable_7, @HashTable_8, @HashTable_9, @HashTable_10, @HashTable_11, @HashTable_12, @HashTable_13, @HashTable_14, @HashTable_15,
-    @HashTable_16, @HashTable_17, @HashTable_18, @HashTable_19, @HashTable_20, @HashTable_21, @HashTable_22, @HashTable_23, @HashTable_24
+    @HashTable_16, @HashTable_17, @HashTable_18, @HashTable_19, @HashTable_20, @HashTable_21, @HashTable_22, @HashTable_23, @HashTable_24,
+	@Clusters
 );
 END
 GO
@@ -305,19 +306,18 @@ SELECT * FROM SubFingerprints,
 	) AS Thresholded
 WHERE SubFingerprints.Id = Thresholded.Id	
 GO
-IF OBJECT_ID('sp_ReadSubFingerprintsByHashBinHashTableAndThresholdWithGroupId','P') IS NOT NULL
-	DROP PROCEDURE sp_ReadSubFingerprintsByHashBinHashTableAndThresholdWithGroupId
+IF OBJECT_ID('sp_ReadSubFingerprintsByHashBinHashTableAndThresholdWithClusters','P') IS NOT NULL
+	DROP PROCEDURE sp_ReadSubFingerprintsByHashBinHashTableAndThresholdWithClusters
 GO
-CREATE PROCEDURE sp_ReadSubFingerprintsByHashBinHashTableAndThresholdWithGroupId
+CREATE PROCEDURE sp_ReadSubFingerprintsByHashBinHashTableAndThresholdWithClusters
 @HashBin_0 BIGINT, @HashBin_1 BIGINT, @HashBin_2 BIGINT, @HashBin_3 BIGINT, @HashBin_4 BIGINT, 
 	@HashBin_5 BIGINT, @HashBin_6 BIGINT, @HashBin_7 BIGINT, @HashBin_8 BIGINT, @HashBin_9 BIGINT,
 	@HashBin_10 BIGINT, @HashBin_11 BIGINT, @HashBin_12 BIGINT, @HashBin_13 BIGINT, @HashBin_14 BIGINT, 
 	@HashBin_15 BIGINT, @HashBin_16 BIGINT, @HashBin_17 BIGINT, @HashBin_18 BIGINT, @HashBin_19 BIGINT,
 	@HashBin_20 BIGINT, @HashBin_21 BIGINT, @HashBin_22 BIGINT, @HashBin_23 BIGINT, @HashBin_24 BIGINT,
-	@Threshold INT, @GroupId VARCHAR(20)
+	@Threshold INT, @Clusters VARCHAR(255)
 AS
-SELECT * FROM SubFingerprints
-    INNER JOIN
+SELECT * FROM SubFingerprints, 
 	( SELECT Id FROM 
 	   (
 		SELECT Id FROM SubFingerprints WHERE HashTable_0 = @HashBin_0
@@ -372,8 +372,8 @@ SELECT * FROM SubFingerprints
 	  ) AS Hashes
 	 GROUP BY Hashes.Id
 	 HAVING COUNT(Hashes.Id) >= @Threshold
-	) AS Thresholded ON SubFingerprints.Id = Thresholded.Id	
-INNER JOIN Tracks ON SubFingerprints.TrackId = Tracks.Id AND Tracks.GroupId = @GroupId
+	) AS Thresholded
+WHERE SubFingerprints.Id = Thresholded.Id AND SubFingerprints.Clusters LIKE @Clusters
 GO
 IF OBJECT_ID('sp_ReadSubFingerprintsByTrackId','P') IS NOT NULL
 	DROP PROCEDURE sp_ReadSubFingerprintsByTrackId

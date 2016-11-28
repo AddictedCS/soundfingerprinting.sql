@@ -35,5 +35,7 @@
         public long HashTable_22 { get; set; }
         public long HashTable_23 { get; set; }
         public long HashTable_24 { get; set; }
+
+        public string Clusters { get; set; }
     }
 }

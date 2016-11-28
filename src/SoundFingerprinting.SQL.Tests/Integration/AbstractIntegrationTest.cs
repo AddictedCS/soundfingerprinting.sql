@@ -1,29 +1,25 @@
 ﻿namespace SoundFingerprinting.SQL.Tests.Integration
 {
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NUnit.Framework;
 
     using SoundFingerprinting.Audio;
     using SoundFingerprinting.DAO;
     using SoundFingerprinting.DAO.Data;
     using SoundFingerprinting.Data;
 
-    [DeploymentItem(@"TestEnvironment\floatsamples.bin")]
-    [DeploymentItem(@"TestEnvironment\Kryptonite.mp3")]
-    [DeploymentItem(@"x86", @"x86")]
-    [DeploymentItem(@"x64", @"x64")]
-    [TestClass]
     public abstract class AbstractIntegrationTest 
     {
         protected const double Epsilon = 0.0001;
 
         protected const int SampleRate = 5512;
 
-        protected const string PathToMp3 = @"Kryptonite.mp3";
+        protected readonly string PathToMp3 = Path.Combine(TestContext.CurrentContext.TestDirectory, "Kryptonite.mp3");
 
-        protected const string PathToSamples = @"floatsamples.bin";
+        protected readonly string PathToSamples = Path.Combine(TestContext.CurrentContext.TestDirectory, "floatsamples.bin");
 
         protected readonly bool[] GenericFingerprint = new[]
             {
@@ -63,7 +59,7 @@
                 (byte)22, (byte)0, (byte)0, (byte)0,
                 (byte)23, (byte)0, (byte)0, (byte)0,
                 (byte)24, (byte)0, (byte)0, (byte)0,
-                (byte)25, (byte)0, (byte)0, (byte)0,
+                (byte)25, (byte)0, (byte)0, (byte)0
             };
 
         protected readonly long[] GenericHashBuckets = new[]
@@ -77,9 +73,8 @@
             Assert.AreEqual(expectedTrack.Album, actualTrack.Album);
             Assert.AreEqual(expectedTrack.Artist, actualTrack.Artist);
             Assert.AreEqual(expectedTrack.Title, actualTrack.Title);
-            Assert.AreEqual(expectedTrack.TrackLengthSec, actualTrack.TrackLengthSec);
+            Assert.AreEqual(expectedTrack.Length, actualTrack.Length);
             Assert.AreEqual(expectedTrack.ISRC, actualTrack.ISRC);
-            Assert.AreEqual(expectedTrack.GroupId, actualTrack.GroupId);
         }
 
         protected void AssertHashDatasAreTheSame(IList<HashedFingerprint> firstHashDatas, IList<HashedFingerprint> secondHashDatas)
@@ -87,8 +82,8 @@
             Assert.AreEqual(firstHashDatas.Count, secondHashDatas.Count);
          
             // hashes are not ordered as parallel computation is involved
-            firstHashDatas = this.SortHashesByFirstValueOfHashBin(firstHashDatas);
-            secondHashDatas = this.SortHashesByFirstValueOfHashBin(secondHashDatas);
+            firstHashDatas = SortHashesByFirstValueOfHashBin(firstHashDatas);
+            secondHashDatas = SortHashesByFirstValueOfHashBin(secondHashDatas);
 
             for (int i = 0; i < firstHashDatas.Count; i++)
             {

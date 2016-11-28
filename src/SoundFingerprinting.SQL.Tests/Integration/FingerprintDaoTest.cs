@@ -2,13 +2,13 @@
 {
     using System.Transactions;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NUnit.Framework;
 
     using SoundFingerprinting.DAO;
     using SoundFingerprinting.DAO.Data;
     using SoundFingerprinting.InMemory;
 
-    [TestClass]
+    [TestFixture]
     public class FingerprintDaoTest : AbstractIntegrationTest
     {
         private readonly IFingerprintDao fingerprintDao;
@@ -22,22 +22,22 @@
             trackDao = new TrackDao();
         }
 
-        [TestInitialize]
+        [SetUp]
         public void SetUp()
         {
             transactionPerTestScope = new TransactionScope();
         }
 
-        [TestCleanup]
+        [TearDown]
         public void TearDown()
         {
             transactionPerTestScope.Dispose();
         }
 
-        [TestMethod]
+        [Test]
         public void InsertFingerprintsTest()
         {
-            TrackData track = new TrackData("isrc", "artist", "title", "album", 1986, 200);
+            var track = new TrackData("isrc", "artist", "title", "album", 1986, 200);
             var trackReference = trackDao.InsertTrack(track);
 
             var fingerprintReference = fingerprintDao.InsertFingerprint(new FingerprintData(GenericFingerprint, trackReference));
@@ -45,7 +45,7 @@
             AssertModelReferenceIsInitialized(fingerprintReference);
         }
 
-        [TestMethod]
+        [Test]
         public void MultipleFingerprintsInsertTest()
         {
             const int NumberOfFingerprints = 100;
@@ -59,7 +59,7 @@
             }
         }
 
-        [TestMethod]
+        [Test]
         public void ReadFingerprintsTest()
         {
             const int NumberOfFingerprints = 100;
@@ -77,11 +77,7 @@
 
             foreach (var fingerprint in fingerprints)
             {
-                Assert.IsTrue(GenericFingerprint.Length == fingerprint.Signature.Length);
-                for (var i = 0; i < GenericFingerprint.Length; i++)
-                {
-                    Assert.AreEqual(GenericFingerprint[i], fingerprint.Signature[i]);
-                }
+                CollectionAssert.AreEqual(GenericFingerprint, fingerprint.Signature);
             }
         }
     }
