@@ -17,9 +17,7 @@
 
         protected const int SampleRate = 5512;
 
-        protected readonly string PathToMp3 = Path.Combine(TestContext.CurrentContext.TestDirectory, "Kryptonite.mp3");
-
-        protected readonly string PathToSamples = Path.Combine(TestContext.CurrentContext.TestDirectory, "floatsamples.bin");
+        protected readonly string PathToMp3 = Path.Combine(TestContext.CurrentContext.TestDirectory, "Chopin.mp3");
 
         protected readonly bool[] GenericFingerprint = new[]
             {
