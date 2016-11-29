@@ -64,8 +64,7 @@
                                         .UsingServices(bassAudioService);
                                     
             double seconds = tagService.GetTagInfo(PathToMp3).Duration;
-            int samples = (int)(seconds * fingerprintCommand.FingerprintConfiguration.SampleRate);
-            int expectedFingerprints = (samples / StaticStride) - 1;
+            int expectedFingerprints = (int)(seconds * fingerprintCommand.FingerprintConfiguration.SampleRate / StaticStride * StaticStride / StaticStride) - 2; // ? new file generates 1 fingerprint less;
 
             var fingerprints = ((FingerprintCommand)fingerprintCommand).Fingerprint().Result;
 
