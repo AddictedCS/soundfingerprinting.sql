@@ -216,13 +216,7 @@
 
         private AudioSamples GenerateRandomAudioSamples(int length)
         {
-            return new AudioSamples
-            {
-                Duration = length,
-                Origin = string.Empty,
-                SampleRate = 5512,
-                Samples = GenerateRandomFloatArray(length)
-            };
+            return new AudioSamples(GenerateRandomFloatArray(length), string.Empty, 5512);
         }
 
         private float[] GenerateRandomFloatArray(int length)
