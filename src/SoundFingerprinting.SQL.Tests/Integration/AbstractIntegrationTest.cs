@@ -1,29 +1,23 @@
 ﻿namespace SoundFingerprinting.SQL.Tests.Integration
 {
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NUnit.Framework;
 
     using SoundFingerprinting.Audio;
     using SoundFingerprinting.DAO;
     using SoundFingerprinting.DAO.Data;
     using SoundFingerprinting.Data;
 
-    [DeploymentItem(@"TestEnvironment\floatsamples.bin")]
-    [DeploymentItem(@"TestEnvironment\Kryptonite.mp3")]
-    [DeploymentItem(@"x86", @"x86")]
-    [DeploymentItem(@"x64", @"x64")]
-    [TestClass]
     public abstract class AbstractIntegrationTest 
     {
         protected const double Epsilon = 0.0001;
 
         protected const int SampleRate = 5512;
 
-        protected const string PathToMp3 = @"Kryptonite.mp3";
-
-        protected const string PathToSamples = @"floatsamples.bin";
+        protected readonly string PathToMp3 = Path.Combine(TestContext.CurrentContext.TestDirectory, "Chopin.mp3");
 
         protected readonly bool[] GenericFingerprint = new[]
             {
@@ -39,9 +33,31 @@
 
         protected readonly byte[] GenericSignature = new[]
             {
-                (byte)1, (byte)2, (byte)3, (byte)4, (byte)5, (byte)6, (byte)7, (byte)8, (byte)9, (byte)10, (byte)11,
-                (byte)12, (byte)13, (byte)14, (byte)15, (byte)16, (byte)17, (byte)18, (byte)19, (byte)20, (byte)21,
-                (byte)22, (byte)23, (byte)24, (byte)25
+                (byte)1, (byte)0, (byte)0, (byte)0,
+                (byte)2, (byte)0, (byte)0, (byte)0,
+                (byte)3, (byte)0, (byte)0, (byte)0,
+                (byte)4, (byte)0, (byte)0, (byte)0,
+                (byte)5, (byte)0, (byte)0, (byte)0,
+                (byte)6, (byte)0, (byte)0, (byte)0,
+                (byte)7, (byte)0, (byte)0, (byte)0,
+                (byte)8, (byte)0, (byte)0, (byte)0,
+                (byte)9, (byte)0, (byte)0, (byte)0,
+                (byte)10, (byte)0, (byte)0, (byte)0,
+                (byte)11, (byte)0, (byte)0, (byte)0,
+                (byte)12, (byte)0, (byte)0, (byte)0,
+                (byte)13, (byte)0, (byte)0, (byte)0,
+                (byte)14, (byte)0, (byte)0, (byte)0,
+                (byte)15, (byte)0, (byte)0, (byte)0,
+                (byte)16, (byte)0, (byte)0, (byte)0,
+                (byte)17, (byte)0, (byte)0, (byte)0,
+                (byte)18, (byte)0, (byte)0, (byte)0,
+                (byte)19, (byte)0, (byte)0, (byte)0,
+                (byte)20, (byte)0, (byte)0, (byte)0,
+                (byte)21, (byte)0, (byte)0, (byte)0,
+                (byte)22, (byte)0, (byte)0, (byte)0,
+                (byte)23, (byte)0, (byte)0, (byte)0,
+                (byte)24, (byte)0, (byte)0, (byte)0,
+                (byte)25, (byte)0, (byte)0, (byte)0
             };
 
         protected readonly long[] GenericHashBuckets = new[]
@@ -55,9 +71,8 @@
             Assert.AreEqual(expectedTrack.Album, actualTrack.Album);
             Assert.AreEqual(expectedTrack.Artist, actualTrack.Artist);
             Assert.AreEqual(expectedTrack.Title, actualTrack.Title);
-            Assert.AreEqual(expectedTrack.TrackLengthSec, actualTrack.TrackLengthSec);
+            Assert.AreEqual(expectedTrack.Length, actualTrack.Length);
             Assert.AreEqual(expectedTrack.ISRC, actualTrack.ISRC);
-            Assert.AreEqual(expectedTrack.GroupId, actualTrack.GroupId);
         }
 
         protected void AssertHashDatasAreTheSame(IList<HashedFingerprint> firstHashDatas, IList<HashedFingerprint> secondHashDatas)
@@ -65,23 +80,15 @@
             Assert.AreEqual(firstHashDatas.Count, secondHashDatas.Count);
          
             // hashes are not ordered as parallel computation is involved
-            firstHashDatas = this.SortHashesByFirstValueOfHashBin(firstHashDatas);
-            secondHashDatas = this.SortHashesByFirstValueOfHashBin(secondHashDatas);
+            firstHashDatas = SortHashesByFirstValueOfHashBin(firstHashDatas);
+            secondHashDatas = SortHashesByFirstValueOfHashBin(secondHashDatas);
 
             for (int i = 0; i < firstHashDatas.Count; i++)
             {
-                for (int j = 0; j < firstHashDatas[i].SubFingerprint.Length; j++)
-                {
-                    Assert.AreEqual(firstHashDatas[i].SubFingerprint[j], secondHashDatas[i].SubFingerprint[j]);
-                }
-
-                for (int j = 0; j < firstHashDatas[i].HashBins.Length; j++)
-                {
-                    Assert.AreEqual(firstHashDatas[i].HashBins[j], secondHashDatas[i].HashBins[j]);
-                }
-
+                CollectionAssert.AreEqual(firstHashDatas[i].SubFingerprint, secondHashDatas[i].SubFingerprint);
+                CollectionAssert.AreEqual(firstHashDatas[i].HashBins, secondHashDatas[i].HashBins);
                 Assert.AreEqual(firstHashDatas[i].SequenceNumber, secondHashDatas[i].SequenceNumber);
-                Assert.AreEqual(firstHashDatas[i].Timestamp, secondHashDatas[i].Timestamp, Epsilon);
+                Assert.AreEqual(firstHashDatas[i].StartsAt, secondHashDatas[i].StartsAt, Epsilon);
             }
         }
 
@@ -110,7 +117,7 @@
 
         private List<HashedFingerprint> SortHashesByFirstValueOfHashBin(IEnumerable<HashedFingerprint> hashDatasFromFile)
         {
-            return hashDatasFromFile.OrderBy(hashData => hashData.HashBins[0]).ToList();
+            return hashDatasFromFile.OrderBy(hashData => hashData.SequenceNumber).ToList();
         }
     }
 }

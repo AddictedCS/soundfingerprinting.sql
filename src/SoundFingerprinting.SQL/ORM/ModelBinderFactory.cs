@@ -72,7 +72,7 @@ namespace SoundFingerprinting.SQL.ORM
                     continue;
                 }
 
-                bool isPropStatic = (propertyInfo.CanRead && propertyInfo.GetGetMethod().IsStatic) || (propertyInfo.CanWrite && propertyInfo.GetSetMethod().IsStatic);
+                bool isPropStatic = (propertyInfo.CanRead && propertyInfo.GetGetMethod().IsStatic) || (propertyInfo.CanWrite && propertyInfo.SetMethod.IsStatic);
 
                 if (isPropStatic)
                 {

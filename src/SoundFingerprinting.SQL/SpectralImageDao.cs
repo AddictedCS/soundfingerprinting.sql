@@ -12,7 +12,7 @@
             throw new System.NotImplementedException();
         }
 
-        public List<SpectralImageData> GetSpectralImagesByTrackId(IModelReference trackReference)
+        public IEnumerable<SpectralImageData> GetSpectralImagesByTrackReference(IModelReference trackReference)
         {
             throw new System.NotImplementedException();
         }
