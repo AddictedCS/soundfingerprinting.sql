@@ -1,13 +1,13 @@
 ## Sound Fingerprinting MSSQL
 _soundfingerprinting.sql_ persistent storage implementation which allows storing [soundfingerprinting](https://github.com/AddictedCS/soundfingerprinting) algorithm's data objects in _MSSQL_ database. 
 ## Usage
-The MSSQL database initialization script can be find [here](src/Scripts/DBScript.sql). Do not forget to add connection string <code>FingerprintConnectionString</code> in your app.config file.
+The MSSQL database initialization script can be find [here](src/Scripts/DBScript.sql). Do not forget to add connection string `FingerprintConnectionString` in your `app.config` filex
 ```xml
 <connectionStrings>
     <add name="FingerprintConnectionString" connectionString="Data Source=(local);Initial Catalog=FingerprintsDb;Integrated Security=True; Connection Timeout=15;" providerName="System.Data.SqlClient"/>
 </connectionStrings>
 ```
-Use <code>SqlModelService</code> class when fingerprinting and querying
+Use `SqlModelService` class when fingerprinting and querying
 ```csharp
 private readonly IModelService modelService = new SqlModelService(); // SQL back end
 private readonly IAudioService audioService = new NAudioService(); // use NAudio audio processing library
@@ -32,9 +32,15 @@ public void StoreAudioFileFingerprintsInStorageForLaterRetrieval(string pathToAu
     modelService.InsertHashedFingerprintsForTrack(hashedFingerprints, trackReference); // insert in SQL backend
 }
 ```
-## Binaries
+### Binaries
     git clone git@github.com:AddictedCS/soundfingerprinting.sql.git
-In order to build latest version of the <code>SoundFingerprinting.SQL</code> assembly run the following command from repository root
+In order to build latest version of the `SoundFingerprinting.SQL` assembly run the following command from repository root
     .\build.cmd
-## Get it on NuGet
+### Get it on NuGet
     Install-Package SoundFingerprinting.SQL
+	
+### Contribute
+If you want to contribute you are welcome to open issues or discuss on [issues](https://github.com/AddictedCS/soundfingerprinting/issues) page. Feel free to contact me for any remarks, ideas, bug reports etc. 
+
+### Licence
+The framework is provided under [MIT](https://opensource.org/licenses/MIT) licence agreement.

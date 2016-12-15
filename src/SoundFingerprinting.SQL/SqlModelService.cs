@@ -2,23 +2,29 @@
 {
     using SoundFingerprinting.DAO;
 
-    public class SqlModelService : ModelService
+    public class SqlModelService : AdvancedModelService
     {
-        public SqlModelService()
-            : base(new TrackDao(), new HashBinDao(), new SubFingerprintDao(), new FingerprintDao(), new SpectralImageDao())
+        public SqlModelService() : base(new TrackDao(), new SubFingerprintDao(), new FingerprintDao(), new SpectralImageDao())
         {
             // no op
         }
 
         protected SqlModelService(
             ITrackDao trackDao,
-            IHashBinDao hashBinDao,
             ISubFingerprintDao subFingerprintDao,
             IFingerprintDao fingerprintDao,
             ISpectralImageDao spectralImageDao)
-            : base(trackDao, hashBinDao, subFingerprintDao, fingerprintDao, spectralImageDao)
+            : base(trackDao, subFingerprintDao, fingerprintDao, spectralImageDao)
         {
             // no op
+        }
+
+        public override bool SupportsBatchedSubFingerprintQuery
+        {
+            get
+            {
+                return false;
+            }
         }
     }
 }

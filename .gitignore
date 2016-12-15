@@ -1,5 +1,6 @@
 release/
 debug/
+build/
 msbuild.log
 *.suo
 *.user
