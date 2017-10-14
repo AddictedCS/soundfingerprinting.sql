@@ -9,7 +9,7 @@
 	<licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
     <projectUrl>https://github.com/AddictedCS/soundfingerprinting</projectUrl>
     <description>$description$</description>
-    <releaseNotes>SQL backend for SoundFingerprinting framework is released separately from main SoundFingerprinting library</releaseNotes>
+    <releaseNotes>SQL backend for SoundFingerprinting framework. Version 3.2.0 upgrade.</releaseNotes>
     <copyright>Copyright 2016 Sergiu Ciumac</copyright>
     <tags>Audio Identification Fingerprinting Digital Signal Processing Music Recognition Data Mining Content Sound</tags>
   </metadata>
