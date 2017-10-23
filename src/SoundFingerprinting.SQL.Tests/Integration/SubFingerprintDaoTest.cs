@@ -51,7 +51,7 @@
             var track = new TrackData("isrc", "artist", "title", "album", 1986, 200);
             var trackReference = trackDao.InsertTrack(track);
             const int NumberOfHashBins = 100;
-            var hashedFingerprints = Enumerable.Range(0, NumberOfHashBins).Select(i => new HashedFingerprint(GenericSignature, GenericHashBuckets, i, i * 0.928, Enumerable.Empty<string>()));
+            var hashedFingerprints = Enumerable.Range(0, NumberOfHashBins).Select(i => new HashedFingerprint(GenericSignature, GenericHashBuckets, (uint)i, i * 0.928f, Enumerable.Empty<string>()));
 
             InsertHashedFingerprintsForTrack(hashedFingerprints, trackReference);
 
@@ -82,6 +82,7 @@
                 {
                     config.Stride = new IncrementalStaticStride(StaticStride);
                     config.Clusters = new[] { "first-group-id" };
+                    return config;
                 }).UsingServices(audioService)
                 .Hash()
                 .Result;
@@ -95,6 +96,7 @@
                {
                    config.Stride = new IncrementalStaticStride(StaticStride);
                    config.Clusters = new[] { "second-group-id" };
+                   return config;
                }).UsingServices(audioService)
                .Hash()
                .Result;

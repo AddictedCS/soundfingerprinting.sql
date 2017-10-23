@@ -190,6 +190,7 @@
                 .WithFingerprintConfig(config =>
                 {
                     config.Stride = new IncrementalStaticStride(StaticStride);
+                    return config;
                 })
                 .UsingServices(audioService)
                 .Hash()

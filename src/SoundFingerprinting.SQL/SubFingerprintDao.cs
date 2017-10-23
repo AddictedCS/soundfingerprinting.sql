@@ -69,7 +69,7 @@
                     {
                         var hashes = GetHashes(dto);
                         byte[] signature = hashConverter.ToBytes(hashes, 100);
-                        return new HashedFingerprint(signature, hashes, dto.SequenceNumber, dto.SequenceAt, string.IsNullOrEmpty(dto.Clusters) ? Enumerable.Empty<string>() : dto.Clusters.Split(','));
+                        return new HashedFingerprint(signature, hashes, (uint)dto.SequenceNumber, (float)dto.SequenceAt, string.IsNullOrEmpty(dto.Clusters) ? Enumerable.Empty<string>() : dto.Clusters.Split(','));
                     }).ToList();
         }
 
@@ -120,8 +120,8 @@
             long[] hashes = GetHashes(dto);
             return new SubFingerprintData(
                 hashes,
-                dto.SequenceNumber,
-                dto.SequenceAt,
+                (uint)dto.SequenceNumber,
+                (float)dto.SequenceAt,
                 new ModelReference<long>(dto.Id),
                 new ModelReference<int>(dto.TrackId));
         }

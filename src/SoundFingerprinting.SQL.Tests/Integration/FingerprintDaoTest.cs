@@ -18,8 +18,9 @@
 
         public FingerprintDaoTest()
         {
-            fingerprintDao = new FingerprintDao();
-            trackDao = new TrackDao();
+            var ramStorage = new RAMStorage(50);
+            fingerprintDao = new FingerprintDao(ramStorage);
+            trackDao = new TrackDao(ramStorage);
         }
 
         [SetUp]
