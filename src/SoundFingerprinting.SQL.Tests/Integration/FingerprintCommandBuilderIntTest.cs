@@ -3,7 +3,6 @@
     using System;
     using System.IO;
     using System.Linq;
-    using System.Transactions;
 
     using NUnit.Framework;
 
@@ -28,8 +27,6 @@
         private readonly BassWaveFileUtility bassWaveFileUtility;
         private readonly NAudioService audioService;
 
-        private TransactionScope transactionPerTestScope;
-
         public FingerprintCommandBuilderIntTest()
         {
             bassAudioService = new BassAudioService();
@@ -40,28 +37,21 @@
             queryFingerprintService = new QueryFingerprintService();
         }
 
-        [SetUp]
-        public void SetUp()
-        {
-            transactionPerTestScope = new TransactionScope();
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            transactionPerTestScope.Dispose();
-        }
-
         [Test]
         public void CreateFingerprintsFromDefaultFileAndAssertNumberOfFingerprints()
         {
             const int StaticStride = 5115;
             var tagService = new BassTagService();
 
-            var fingerprintCommand = fingerprintCommandBuilder.BuildFingerprintCommand()
-                                        .From(PathToMp3)
-                                        .WithFingerprintConfig(config => config.Stride = new IncrementalStaticStride(StaticStride))
-                                        .UsingServices(bassAudioService);
+            var fingerprintCommand = fingerprintCommandBuilder
+                .BuildFingerprintCommand()
+                .From(PathToMp3)
+                .WithFingerprintConfig(
+                    config =>
+                    {
+                        config.Stride = new IncrementalStaticStride(StaticStride);
+                        return config;
+                    }).UsingServices(bassAudioService);
                                     
             double seconds = tagService.GetTagInfo(PathToMp3).Duration;
             int expectedFingerprints = (int)(seconds * fingerprintCommand.FingerprintConfiguration.SampleRate / StaticStride * StaticStride / StaticStride) - 2; // ? new file generates 1 fingerprint less;
@@ -91,6 +81,8 @@
             modelService.InsertHashDataForTrack(hashedFingerprints, trackReference);
 
             var queryResult = queryFingerprintService.Query(hashedFingerprints, new DefaultQueryConfiguration(), modelService);
+
+            modelService.DeleteTrack(trackReference);
 
             Assert.IsTrue(queryResult.ContainsMatches);
             Assert.AreEqual(1, queryResult.ResultEntries.Count());
@@ -142,9 +134,11 @@
             Assert.AreEqual(bassFingerprints.Count, naudioFingerprints.Count);
             for (int i = 0; i < naudioFingerprints.Count; i++)
             {
-                for (int j = 0; j < naudioFingerprints[i].Signature.Length; j++)
+                var naudioSignature = naudioFingerprints[i].Signature.ToBools();
+                var bassSignature = bassFingerprints[i].Signature.ToBools();
+                for (int j = 0; j < naudioSignature.Length; j++)
                 {
-                    if (naudioFingerprints[i].Signature[j] != bassFingerprints[i].Signature[j])
+                    if (naudioSignature[j] != bassSignature[j])
                     {
                         unmatchedItems++;
                     }
@@ -165,11 +159,16 @@
             long fileSize = new FileInfo(tempFile).Length;
 
             var list = fingerprintCommandBuilder.BuildFingerprintCommand()
-                                      .From(PathToMp3)
-                                      .WithFingerprintConfig(customConfiguration => customConfiguration.Stride = new StaticStride(0))
-                                      .UsingServices(bassAudioService)
-                                      .Hash()
-                                      .Result;
+                .From(PathToMp3)
+                .WithFingerprintConfig(
+                customConfiguration =>
+                {
+                    customConfiguration.Stride = new StaticStride(0);
+                    return customConfiguration;
+                })
+                .UsingServices(bassAudioService)
+                .Hash()
+                .Result;
 
             long expected = fileSize / (8192 * 4); // One fingerprint corresponds to a granularity of 8192 samples which is 16384 bytes
             Assert.AreEqual(expected, list.Count);

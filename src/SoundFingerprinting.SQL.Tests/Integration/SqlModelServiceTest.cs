@@ -106,7 +106,7 @@
         {
             TrackData track = new TrackData("isrc", "artist", "title", "album", 1986, 200);
             var trackReference = modelService.InsertTrack(track);
-            var hashedFingerprints = new HashedFingerprint(GenericSignature, GenericHashBuckets, 1, 0.928, Enumerable.Empty<string>());
+            var hashedFingerprints = new HashedFingerprint(GenericSignature, GenericHashBuckets, 1, 0.928f, Enumerable.Empty<string>());
             modelService.InsertHashDataForTrack(new[] { hashedFingerprints }, trackReference);
 
             modelService.DeleteTrack(trackReference);
@@ -122,7 +122,7 @@
         {
             TrackData expectedTrack = new TrackData("isrc", "artist", "title", "album", 1986, 200);
             var trackReference = modelService.InsertTrack(expectedTrack);
-            var hashedFingerprints = new HashedFingerprint(GenericSignature, GenericHashBuckets, 1, 0.928, Enumerable.Empty<string>());
+            var hashedFingerprints = new HashedFingerprint(GenericSignature, GenericHashBuckets, 1, 0.928f, Enumerable.Empty<string>());
             modelService.InsertHashDataForTrack(new[] { hashedFingerprints }, trackReference);
 
             var subFingerprints = modelService.ReadSubFingerprints(GenericHashBuckets, new DefaultQueryConfiguration());
@@ -143,8 +143,8 @@
             Assert.IsFalse(firstTrackReference.Equals(secondTrackReference));
             long[] firstTrackBuckets = new long[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 };
             long[] secondTrackBuckets = new long[] { 2, 2, 4, 5, 6, 7, 7, 9, 10, 11, 12, 13, 14, 14, 16, 17, 18, 19, 20, 20, 22, 23, 24, 25, 26 };
-            var firstHashData = new HashedFingerprint(GenericSignature, firstTrackBuckets, 1, 0.928, Enumerable.Empty<string>());
-            var secondHashData = new HashedFingerprint(GenericSignature, secondTrackBuckets, 1, 0.928, Enumerable.Empty<string>());
+            var firstHashData = new HashedFingerprint(GenericSignature, firstTrackBuckets, 1, 0.928f, Enumerable.Empty<string>());
+            var secondHashData = new HashedFingerprint(GenericSignature, secondTrackBuckets, 1, 0.928f, Enumerable.Empty<string>());
 
             modelService.InsertHashDataForTrack(new[] { firstHashData }, firstTrackReference);
             modelService.InsertHashDataForTrack(new[] { secondHashData }, secondTrackReference);
@@ -169,9 +169,9 @@
             long[] firstTrackBuckets = new long[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 };
             long[] secondTrackBuckets = new long[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 };
             var firstHashData = new HashedFingerprint(
-                GenericSignature, firstTrackBuckets, 1, 0.928, new[] { "first-group-id" });
+                GenericSignature, firstTrackBuckets, 1, 0.928f, new[] { "first-group-id" });
             var secondHashData = new HashedFingerprint(
-                GenericSignature, secondTrackBuckets, 1, 0.928, new[] { "second-group-id" });
+                GenericSignature, secondTrackBuckets, 1, 0.928f, new[] { "second-group-id" });
 
             modelService.InsertHashDataForTrack(new[] { firstHashData }, firstTrackReference);
             modelService.InsertHashDataForTrack(new[] { secondHashData }, secondTrackReference);
