@@ -48,17 +48,14 @@
     <Reference Include="protobuf-net, Version=2.3.2.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.3.2\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
-    <Reference Include="SoundFingerprinting, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoundFingerprinting.4.0.0\lib\net45\SoundFingerprinting.dll</HintPath>
+    <Reference Include="SoundFingerprinting, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoundFingerprinting.4.1.0\lib\net45\SoundFingerprinting.dll</HintPath>
     </Reference>
-    <Reference Include="SoundFingerprinting.Audio, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoundFingerprinting.4.0.0\lib\net45\SoundFingerprinting.Audio.dll</HintPath>
+    <Reference Include="SoundFingerprinting.Audio, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoundFingerprinting.4.1.0\lib\net45\SoundFingerprinting.Audio.dll</HintPath>
     </Reference>
-    <Reference Include="SoundFingerprinting.Audio.NAudio, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoundFingerprinting.4.0.0\lib\net45\SoundFingerprinting.Audio.NAudio.dll</HintPath>
-    </Reference>
-    <Reference Include="SoundFingerprinting.Infrastructure, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SoundFingerprinting.4.0.0\lib\net45\SoundFingerprinting.Infrastructure.dll</HintPath>
+    <Reference Include="SoundFingerprinting.Audio.NAudio, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SoundFingerprinting.4.1.0\lib\net45\SoundFingerprinting.Audio.NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -82,14 +79,12 @@
     <Compile Include="Connection\DefaultConnectionStringFactory.cs" />
     <Compile Include="ORM\Executor.cs" />
     <Compile Include="ORM\Extensions.cs" />
-    <Compile Include="FingerprintDao.cs" />
     <Compile Include="Connection\IConnectionStringFactory.cs" />
     <Compile Include="Connection\IDatabaseProviderFactory.cs" />
     <Compile Include="ORM\IExecutor.cs" />
     <Compile Include="ORM\IgnoreBindingAttribute.cs" />
     <Compile Include="ORM\IModelBinder.cs" />
     <Compile Include="ORM\IModelBinderFactory.cs" />
-    <Compile Include="Infrastructure\SQLModuleLoader.cs" />
     <Compile Include="ORM\IParameterBinder.cs" />
     <Compile Include="ORM\IReader.cs" />
     <Compile Include="ORM\ModelBinder.cs" />

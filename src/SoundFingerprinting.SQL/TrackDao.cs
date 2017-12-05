@@ -6,7 +6,6 @@ namespace SoundFingerprinting.SQL
 
     using SoundFingerprinting.DAO;
     using SoundFingerprinting.DAO.Data;
-    using SoundFingerprinting.Infrastructure;
     using SoundFingerprinting.SQL.Connection;
     using SoundFingerprinting.SQL.ORM;
 
@@ -21,10 +20,7 @@ namespace SoundFingerprinting.SQL
 
         private readonly Action<TrackData, IReader> trackReferenceReader = (item, reader) => { item.TrackReference = new ModelReference<int>(reader.GetInt32("Id")); };
 
-        public TrackDao()
-            : base(
-                DependencyResolver.Current.Get<IDatabaseProviderFactory>(),
-                DependencyResolver.Current.Get<IModelBinderFactory>())
+        public TrackDao(): base(new MsSqlDatabaseProviderFactory(), new CachedModelBinderFactory(new ModelBinderFactory()))
         {
             // no op
         }
@@ -56,6 +52,18 @@ namespace SoundFingerprinting.SQL
                         .WithParameter("Id", trackReference.Id, DbType.Int32)
                         .Execute()
                         .AsComplexModel(trackReferenceReader);
+        }
+
+        public List<TrackData> ReadTracks(IEnumerable<IModelReference> ids)
+        {
+            var tracks = new List<TrackData>();
+            foreach (var modelReference in ids)
+            {
+                var track = ReadTrack(modelReference);
+                tracks.Add(track);
+            }
+
+            return tracks;
         }
 
         public IList<TrackData> ReadTrackByArtistAndTitleName(string artist, string title)
