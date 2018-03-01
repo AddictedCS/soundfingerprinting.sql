@@ -13,9 +13,4 @@
     <copyright>Copyright 2016 Sergiu Ciumac</copyright>
     <tags>Audio Identification Fingerprinting Digital Signal Processing Music Recognition Data Mining Content Sound</tags>
   </metadata>
-  <files>
-      <file src="bin\Release\SoundFingerprinting.Infrastructure.dll" target="lib\net35" />
-	  <file src="bin\Release\SoundFingerprinting.Infrastructure.dll" target="lib\net40" />
-	  <file src="bin\Release\SoundFingerprinting.Infrastructure.dll" target="lib\net45" />
-   </files>
-</package>
+ </package>

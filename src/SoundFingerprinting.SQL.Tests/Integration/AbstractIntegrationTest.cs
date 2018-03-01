@@ -60,9 +60,9 @@
                 (byte)25, (byte)0, (byte)0, (byte)0
             };
 
-        protected readonly long[] GenericHashBuckets = new[]
+        protected readonly int[] GenericHashBuckets = new[]
             {
-                1L, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 
             };
 
         protected void AssertTracksAreEqual(TrackData expectedTrack, TrackData actualTrack)
@@ -85,7 +85,6 @@
 
             for (int i = 0; i < firstHashDatas.Count; i++)
             {
-                CollectionAssert.AreEqual(firstHashDatas[i].SubFingerprint, secondHashDatas[i].SubFingerprint);
                 CollectionAssert.AreEqual(firstHashDatas[i].HashBins, secondHashDatas[i].HashBins);
                 Assert.AreEqual(firstHashDatas[i].SequenceNumber, secondHashDatas[i].SequenceNumber);
                 Assert.AreEqual(firstHashDatas[i].StartsAt, secondHashDatas[i].StartsAt, Epsilon);

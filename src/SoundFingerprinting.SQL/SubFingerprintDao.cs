@@ -7,7 +7,6 @@
     using SoundFingerprinting.DAO;
     using SoundFingerprinting.DAO.Data;
     using SoundFingerprinting.Data;
-    using SoundFingerprinting.Infrastructure;
     using SoundFingerprinting.Math;
     using SoundFingerprinting.SQL.Connection;
     using SoundFingerprinting.SQL.DAO;
@@ -22,21 +21,12 @@
 
         private const string SpReadSubFingerprintsByTrackId = "sp_ReadSubFingerprintsByTrackId";
 
-        private readonly IHashConverter hashConverter;
-
         public SubFingerprintDao()
-            : this(
-                DependencyResolver.Current.Get<IDatabaseProviderFactory>(),
-                DependencyResolver.Current.Get<IModelBinderFactory>(),
-                DependencyResolver.Current.Get<IHashConverter>())
+            : base(
+                  new MsSqlDatabaseProviderFactory(), 
+                  new CachedModelBinderFactory(new ModelBinderFactory()))
         {
             // no op
-        }
-
-        public SubFingerprintDao(IDatabaseProviderFactory databaseProvider, IModelBinderFactory modelBinderFactory, IHashConverter hashConverter)
-            : base(databaseProvider, modelBinderFactory)
-        {
-            this.hashConverter = hashConverter;
         }
 
         public void InsertHashDataForTrack(IEnumerable<HashedFingerprint> hashes, IModelReference trackReference)
@@ -68,12 +58,11 @@
                 .Select(dto =>
                     {
                         var hashes = GetHashes(dto);
-                        byte[] signature = hashConverter.ToBytes(hashes, 100);
-                        return new HashedFingerprint(signature, hashes, (uint)dto.SequenceNumber, (float)dto.SequenceAt, string.IsNullOrEmpty(dto.Clusters) ? Enumerable.Empty<string>() : dto.Clusters.Split(','));
+                        return new HashedFingerprint(hashes, (uint)dto.SequenceNumber, (float)dto.SequenceAt, string.IsNullOrEmpty(dto.Clusters) ? Enumerable.Empty<string>() : dto.Clusters.Split(','));
                     }).ToList();
         }
 
-        public IEnumerable<SubFingerprintData> ReadSubFingerprints(long[] hashBins, int thresholdVotes, IEnumerable<string> clusters)
+        public IEnumerable<SubFingerprintData> ReadSubFingerprints(int[] hashBins, int thresholdVotes, IEnumerable<string> clusters)
         {
             return PrepareReadSubFingerprintsByHashBuckets(hashBins, thresholdVotes, clusters)
                     .Execute()
@@ -81,7 +70,7 @@
                     .Select(GetSubFingerprintData);
         }
 
-        public ISet<SubFingerprintData> ReadSubFingerprints(IEnumerable<long[]> hashes, int threshold, IEnumerable<string> clusters)
+        public ISet<SubFingerprintData> ReadSubFingerprints(IEnumerable<int[]> hashes, int threshold, IEnumerable<string> clusters)
         {
             var set = new HashSet<SubFingerprintData>();
             foreach (var subFingerprintData in hashes.Select(hash => this.ReadSubFingerprints(hash, threshold, clusters)).SelectMany(subs => subs))
@@ -92,7 +81,7 @@
             return set;
         }
 
-        private IParameterBinder PrepareReadSubFingerprintsByHashBuckets(long[] hashBuckets, int thresholdVotes, IEnumerable<string> clusters)
+        private IParameterBinder PrepareReadSubFingerprintsByHashBuckets(int[] hashBuckets, int thresholdVotes, IEnumerable<string> clusters)
         {
             string storedProcedure = SpReadFingerprintsByHashBinHashTableAndThreshold;
             var enumerable = clusters as List<string> ?? clusters.ToList();
@@ -117,7 +106,7 @@
 
         private SubFingerprintData GetSubFingerprintData(SubFingerprintDTO dto)
         {
-            long[] hashes = GetHashes(dto);
+            int[] hashes = GetHashes(dto);
             return new SubFingerprintData(
                 hashes,
                 (uint)dto.SequenceNumber,
@@ -126,9 +115,9 @@
                 new ModelReference<int>(dto.TrackId));
         }
 
-        private long[] GetHashes(SubFingerprintDTO dto)
+        private int[] GetHashes(SubFingerprintDTO dto)
         {
-            long[] hashes = new[]
+            int[] hashes = new int[]
                 {
                     dto.HashTable_0, dto.HashTable_1, dto.HashTable_2, dto.HashTable_3, dto.HashTable_4, dto.HashTable_5,
                     dto.HashTable_6, dto.HashTable_7, dto.HashTable_8, dto.HashTable_9, dto.HashTable_10, dto.HashTable_11,

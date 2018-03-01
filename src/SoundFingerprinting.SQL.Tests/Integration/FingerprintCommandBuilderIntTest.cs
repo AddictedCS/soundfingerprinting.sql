@@ -13,6 +13,9 @@
     using SoundFingerprinting.Command;
     using SoundFingerprinting.Configuration;
     using SoundFingerprinting.DAO.Data;
+    using SoundFingerprinting.LCS;
+    using SoundFingerprinting.Math;
+    using SoundFingerprinting.Query;
     using SoundFingerprinting.Strides;
 
     [TestFixture]
@@ -34,31 +37,9 @@
             modelService = new SqlModelService();
             bassWaveFileUtility = new BassWaveFileUtility();
             fingerprintCommandBuilder = new FingerprintCommandBuilder();
-            queryFingerprintService = new QueryFingerprintService();
-        }
-
-        [Test]
-        public void CreateFingerprintsFromDefaultFileAndAssertNumberOfFingerprints()
-        {
-            const int StaticStride = 5115;
-            var tagService = new BassTagService();
-
-            var fingerprintCommand = fingerprintCommandBuilder
-                .BuildFingerprintCommand()
-                .From(PathToMp3)
-                .WithFingerprintConfig(
-                    config =>
-                    {
-                        config.Stride = new IncrementalStaticStride(StaticStride);
-                        return config;
-                    }).UsingServices(bassAudioService);
-                                    
-            double seconds = tagService.GetTagInfo(PathToMp3).Duration;
-            int expectedFingerprints = (int)(seconds * fingerprintCommand.FingerprintConfiguration.SampleRate / StaticStride * StaticStride / StaticStride) - 2; // ? new file generates 1 fingerprint less;
-
-            var fingerprints = ((FingerprintCommand)fingerprintCommand).Fingerprint().Result;
-
-            Assert.AreEqual(expectedFingerprints, fingerprints.Count);
+            queryFingerprintService = new QueryFingerprintService(
+                new SimilarityUtility(),
+                new QueryMath(new QueryResultCoverageCalculator(), new ConfidenceCalculator()));
         }
 
         [Test]
@@ -112,43 +93,6 @@
                                         .Result;
 
             AssertHashDatasAreTheSame(hashDatasFromFile, hashDatasFromSamples);
-        }
-
-        [Test]
-        public void CompareFingerprintsCreatedByDifferentProxiesTest()
-        {
-            var naudioFingerprints = ((FingerprintCommand)fingerprintCommandBuilder.BuildFingerprintCommand()
-                                                        .From(PathToMp3)
-                                                        .UsingServices(audioService))
-                                                        .Fingerprint()
-                                                        .Result;
-
-            var bassFingerprints = ((FingerprintCommand)fingerprintCommandBuilder.BuildFingerprintCommand()
-                                                 .From(PathToMp3)
-                                                 .UsingServices(bassAudioService))
-                                                 .Fingerprint()
-                                                 .Result;
-            int unmatchedItems = 0;
-            int totalmatches = 0;
-
-            Assert.AreEqual(bassFingerprints.Count, naudioFingerprints.Count);
-            for (int i = 0; i < naudioFingerprints.Count; i++)
-            {
-                var naudioSignature = naudioFingerprints[i].Signature.ToBools();
-                var bassSignature = bassFingerprints[i].Signature.ToBools();
-                for (int j = 0; j < naudioSignature.Length; j++)
-                {
-                    if (naudioSignature[j] != bassSignature[j])
-                    {
-                        unmatchedItems++;
-                    }
-
-                    totalmatches++;
-                }
-            }
-
-            Assert.AreEqual(true, (float)unmatchedItems / totalmatches < 0.04, "Rate: " + ((float)unmatchedItems / totalmatches));
-            Assert.AreEqual(bassFingerprints.Count, naudioFingerprints.Count);
         }
 
         [Test]
