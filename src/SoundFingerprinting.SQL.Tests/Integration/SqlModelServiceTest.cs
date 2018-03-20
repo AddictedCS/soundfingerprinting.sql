@@ -153,7 +153,7 @@
 
             var subFingerprints = modelService.ReadSubFingerprints(queryBuckets, new DefaultQueryConfiguration());
 
-            Assert.IsTrue(subFingerprints.Count == 1);
+            Assert.IsTrue(subFingerprints.Count == 2);
             Assert.AreEqual(firstTrackReference, subFingerprints[0].TrackReference);
         }
 
