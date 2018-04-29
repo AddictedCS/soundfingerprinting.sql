@@ -39,7 +39,7 @@
             fingerprintCommandBuilder = new FingerprintCommandBuilder();
             queryFingerprintService = new QueryFingerprintService(
                 new SimilarityUtility(),
-                new QueryMath(new QueryResultCoverageCalculator(), new ConfidenceCalculator()));
+                new QueryMath(new QueryResultCoverageCalculator(new LongestIncreasingTrackSequence()), new ConfidenceCalculator()));
         }
 
         [Test]
