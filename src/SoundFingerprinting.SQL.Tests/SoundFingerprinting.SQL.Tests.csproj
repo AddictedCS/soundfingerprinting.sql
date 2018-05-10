@@ -9,9 +9,9 @@
 	<PackageReference Include="NUnit" Version="3.9.0" />
 	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
 	<PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
-	<PackageReference Include="SoundFingerprinting" Version="5.2.0" />
-	<PackageReference Include="SoundFingerprinting.Audio.Bass" Version="5.0.0" />
-	<PackageReference Include="SoundFingerprinting.Audio.NAudio" Version="5.1.0" />
+	<PackageReference Include="SoundFingerprinting" Version="5.2.1" />
+	<PackageReference Include="SoundFingerprinting.Audio.Bass" Version="5.2.1" />
+	<PackageReference Include="SoundFingerprinting.Audio.NAudio" Version="5.2.1" />
   </ItemGroup>
   <ItemGroup>
 	<ProjectReference Include="..\SoundFingerprinting.SQL\SoundFingerprinting.SQL.csproj" />
